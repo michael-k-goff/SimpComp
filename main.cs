@@ -9,13 +9,11 @@ class Program
 {
 	public static void Main()
 	{
-		int num_vertices = 0;
-		Console.Write("How many vertices?\n");
-		num_vertices = int.Parse(Console.ReadLine());
 		SimplicialComplex sc = new SimplicialComplex();
-		while (true)
+		bool result = true;
+		while (result)
 		{
-			sc.addEdge();
+			result = sc.performOperation();
 		}
 	}
 	
@@ -42,6 +40,10 @@ class Program
 		
 		public void writeFace()
 		{
+			if (vertices.Count == 0) {
+				Console.Write("(Empty Face)");
+				return;
+			}
 			foreach (int j in vertices) {
 				Console.Write(j+ " ");
 			}
@@ -77,6 +79,10 @@ class Program
 			 }
 		}
 		
+		public bool contains(Face face) {
+			return true; // Override this
+		}
+		
 		public override bool Equals(object obj)
 		{
 		    return Equals(obj as Face);
@@ -109,6 +115,18 @@ class Program
 	class SimplicialComplex
 	{
 		List<Face> faces = new List<Face>();
+		int num_vertices = 10;
+		
+		public void setNumVertices()
+		{
+			Console.Write("How many vertices?\n");
+			num_vertices = int.Parse(Console.ReadLine());
+		}
+		
+		public void displayNumVertices()
+		{
+			Console.Write("There are {0} vertices.\n",num_vertices);
+		}
 		
 		// Add a face to the simplicial complex if it is not already present. Just a single face, not all subfaces.
 		private void addToSC(Face new_face)
@@ -131,7 +149,7 @@ class Program
 		
 		public void addEdge()
 		{
-			Console.Write("Input the edge: vertex numbers separated by spaces (e.g. 5 7 12).\n");
+			Console.Write("Input the face: vertex numbers separated by spaces (e.g. 5 7 12).\n");
 			string new_face = "";
 			new_face = Console.ReadLine();
 			string[] vertices_string = new_face.Split(' ');
@@ -142,17 +160,98 @@ class Program
 			{
 				int number;
 				bool result = int.TryParse(vertices_string[i], out number);
-				if (result && number >= 0) {
+				if (!result) {
+					Console.Write("{0} is not a number, so ignoring it.\n",vertices_string[i]);
+				}
+				else if (number < 1) {
+					Console.Write("Cannot have non-positive vertex numbers, so ignoring {0}.\n",vertices_string[i]);
+				}
+				else if (number > num_vertices) {
+					Console.Write("{0} exceeds the number of vertices for his simplicial complex.\n",vertices_string[i]);
+				}
+				if (result && number >= 1 && number <= num_vertices) {
 					face.addVertex(number);
 				}
 			}
 			addFaceToSC(face);
-			Console.WriteLine("Number of vertices in the face just added: {0}", face.vertexCount());
+		}
+		
+		public void displayFaces()
+		{
 			Console.Write("The faces are as follows: \n");
 			foreach (var sc_face in faces) {
 				sc_face.writeFace();
 				Console.Write("\n");
 			}
+			Console.Write("Enter anything to return to the main menu.\n");
+			Console.ReadLine();
+		}
+		
+		public void removeFaceFromSC(Face old_face)
+		{
+			foreach (var sc_face in faces) {
+				if (sc_face.contains(old_face)) {
+					Console.Write("asdf"); // Add in proper deletion
+				}
+			}
+		}
+		
+		public void deleteFace()
+		{
+			Console.Write("Input the face: vertex numbers separated by spaces (e.g. 5 7 12).\n");
+			string new_face = "";
+			new_face = Console.ReadLine();
+			string[] vertices_string = new_face.Split(' ');
+			
+			// Determine how many of the proposed vertices are valid
+			Face face = new Face();
+			for (int i=0; i<vertices_string.Length; i++)
+			{
+				int number;
+				bool result = int.TryParse(vertices_string[i], out number);
+				if (!result) {
+					Console.Write("{0} is not a number, so ignoring it.\n",vertices_string[i]);
+				}
+				else if (number < 1) {
+					Console.Write("Cannot have non-positive vertex numbers, so ignoring {0}.\n",vertices_string[i]);
+				}
+				else if (number > num_vertices) {
+					Console.Write("{0} exceeds the number of vertices for his simplicial complex.\n",vertices_string[i]);
+				}
+				if (result && number >= 1 && number <= num_vertices) {
+					face.addVertex(number);
+				}
+			}
+			removeFaceFromSC(face);
+		}
+		
+		public bool performOperation()
+		{
+			Console.Clear();
+			displayNumVertices();
+			Console.Write("What would you like to do?\n\n");
+			Console.Write("(A)dd a Face (adds all subfaces too).\n");
+			Console.Write("(D)elete a Face (deletes all superfaces too).\n");
+			Console.Write("(C)hange number of vertices.\n");
+			Console.Write("(V)iew faces.\n");
+			Console.Write("(Q)uit.\n");
+			string selection = Console.ReadLine();
+			if (selection.Length > 0 && (selection[0] == 'a' || selection[0] == 'A')) {
+				addEdge();
+			}
+			if (selection.Length > 0 && (selection[0] == 'd' || selection[0] == 'D')) {
+				deleteFace();
+			}
+			if (selection.Length > 0 && (selection[0] == 'c' || selection[0] == 'C')) {
+				setNumVertices();
+			}
+			if (selection.Length > 0 && (selection[0] == 'v' || selection[0] == 'V')) {
+				displayFaces();
+			}
+			if (selection.Length > 0 && (selection[0] == 'q' || selection[0] == 'Q')) {
+				return false;
+			}
+			return true;
 		}
 	}
 }
