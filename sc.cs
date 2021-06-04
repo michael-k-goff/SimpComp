@@ -165,5 +165,81 @@ namespace Program
 			Console.Write("Enter anything to continue.\n");
 			Console.ReadLine();
 		}
+		
+		public void loadComplex()
+		{
+			Console.Write("\nEnter the type of complex, followed by parameters.\n\n");
+			Console.Write("Simplex on n vertices: S n (1 <= n <= 10.)\n");
+			Console.Write("Boundary simplex on n vertices: B n (1 <= n <= 10.)\n");
+			Console.Write("Complete complex of dimension d-1 on n vertices: C n d (1 <= d <= n <= 10.)\n");
+			Console.Write("All other inputs: do nothing.\n");
+			string input = Console.ReadLine();
+			String[] input_blocks = input.Split(' ');
+			if (input_blocks.Length < 1) {
+				return;
+			}
+			if ((input_blocks[0] == "S" || input_blocks[0] == "s") && input_blocks.Length >= 2) {
+				int param; 
+				bool result = int.TryParse(input_blocks[1], out param);
+				if (result && param >= 1 && param <= 10) {
+					Console.Write("One simplex coming right up.\n");
+					Console.ReadLine();
+					faces = new List<Face>();
+					num_vertices = param;
+					
+					Face new_face = new Face();
+					for (int i=1; i<=param; i++) {
+						new_face.addVertex(i);
+					}
+					addFaceToSC(new_face);
+					return;
+				}
+			}
+			if ((input_blocks[0] == "B" || input_blocks[0] == "b") && input_blocks.Length >= 2) {
+				int param; 
+				bool result = int.TryParse(input_blocks[1], out param);
+				if (result && param >= 1 && param <= 10) {
+					Console.Write("Reticulating splines (and the boundary).\n");
+					Console.ReadLine();
+					faces = new List<Face>();
+					num_vertices = param;
+					
+					Face new_face = new Face();
+					for (int i=1; i<=param; i++) {
+						new_face.addVertex(i);
+					}
+					addFaceToSC(new_face);
+					removeFaceFromSC(new_face);
+					return;
+				}
+			}
+			if ((input_blocks[0] == "C" || input_blocks[0] == "c") && input_blocks.Length >= 3) {
+				int param1;
+				int param2;
+				bool result1 = int.TryParse(input_blocks[1], out param1);
+				bool result2 = int.TryParse(input_blocks[2], out param2);
+				if (result1 && result2 && param1 <= 10 && param2 >= 1 && param1 >= param2) {
+					Console.Write("Building the complex (not fully implemented yet).\n");
+					Console.ReadLine();
+					faces = new List<Face>();
+					num_vertices = param1;
+					
+					Face new_face = new Face();
+					for (int i=1; i<=param2; i++) {
+						new_face.addVertex(i);
+					}
+					addFaceToSC(new_face);
+					// So far the preceding only adds a single face. To add all the faces, I'm planning the following.
+					// Write an advance function, which looks for the last instance of a vertex in the face followed up a non-vertex, then swaps them.
+					// If we can't advance, then we have the last face.
+					// Keep advancing and adding faces as long as this is still possible.
+					
+					return;
+				}
+			}
+			// Should only get here is no valid input is found
+			Console.Write("Does not appear to be valid input, so doing nothing. Enter anything to continue.\n");
+			Console.ReadLine();
+		}
 	}
 }

@@ -27,6 +27,7 @@ namespace Program {
 			Console.Write("(D)elete a Face (deletes all superfaces too).\n");
 			Console.Write("(C)hange number of vertices.\n");
 			Console.Write("(V)iew faces.\n");
+			Console.Write("(L)oad a pre-existing complex.\n");
 			Console.Write("(Q)uit.\n");
 			string selection = Console.ReadLine();
 			if (selection.Length > 0 && (selection[0] == 'a' || selection[0] == 'A')) {
@@ -40,6 +41,9 @@ namespace Program {
 			}
 			if (selection.Length > 0 && (selection[0] == 'v' || selection[0] == 'V')) {
 				sc.displayFaces();
+			}
+			if (selection.Length > 0 && (selection[0] == 'l' || selection[0] == 'L')) {
+				sc.loadComplex();
 			}
 			if (selection.Length > 0 && (selection[0] == 'q' || selection[0] == 'Q')) {
 				return false;
