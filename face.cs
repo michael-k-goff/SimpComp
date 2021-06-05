@@ -8,6 +8,23 @@ namespace Program
 	public class Face
 	{
 		List<int> vertices = new List<int>();
+		
+		// Advance to the next face in the canonical ordering of vertices. Return true iff the operation is successful.
+		public bool advance(int total_vertices) {
+			int vertex_to_advance = vertices.Count - 1;
+			while (vertex_to_advance >= 0 && vertices[vertex_to_advance] == total_vertices+1+vertex_to_advance-vertices.Count)
+			{
+				vertex_to_advance--;
+			}
+			if (vertex_to_advance < 0) {
+				return false;
+			}
+			vertices[vertex_to_advance]++;
+			for (int i=vertex_to_advance + 1; i<vertices.Count; i++) {
+				vertices[i] = vertices[vertex_to_advance]+(i-vertex_to_advance);
+			}
+			return true;
+		}
 	
 		public void addVertex(int new_vertex)
 		{

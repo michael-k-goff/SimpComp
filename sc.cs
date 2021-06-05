@@ -228,12 +228,11 @@ namespace Program
 					for (int i=1; i<=param2; i++) {
 						new_face.addVertex(i);
 					}
-					addFaceToSC(new_face);
-					// So far the preceding only adds a single face. To add all the faces, I'm planning the following.
-					// Write an advance function, which looks for the last instance of a vertex in the face followed up a non-vertex, then swaps them.
-					// If we can't advance, then we have the last face.
-					// Keep advancing and adding faces as long as this is still possible.
-					
+					bool result = true;
+					while(result) {
+						addFaceToSC(new_face);
+						result = new_face.advance(num_vertices);
+					}					
 					return;
 				}
 			}
