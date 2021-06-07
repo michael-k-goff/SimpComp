@@ -7,7 +7,7 @@ namespace Program
 {
 	public class Face
 	{
-		List<int> vertices = new List<int>();
+		public List<int> vertices = new List<int>();
 		
 		// Advance to the next face in the canonical ordering of vertices. Return true iff the operation is successful.
 		public bool advance(int total_vertices) {
@@ -66,6 +66,16 @@ namespace Program
 		{
 			vertices = vertex_list;
 		}
+		
+		public Face removeVertex(int removed)
+		{
+			List<int> smaller_face = new List<int>();
+			smaller_face.AddRange(vertices);
+			smaller_face.RemoveAt(removed);
+			Face smallerFace = new Face();
+			smallerFace.setVertices(smaller_face);
+			return smallerFace;
+		}
 	
 		public List<Face> getSubfaces()
 		{
@@ -111,6 +121,11 @@ namespace Program
 				}
 			}
 			return true;
+		}
+		
+		// Overriding the == operator doesn't seem to be working, so doing this instead.
+		public bool isEqual(Face other) {
+			return Equals(other);
 		}
 	
 		public override bool Equals(object obj)

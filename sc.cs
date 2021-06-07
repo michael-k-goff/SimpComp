@@ -5,10 +5,88 @@ using System.Linq;
 
 namespace Program
 {
+	public class Chain
+	{
+		List<int> face_nums;
+		List<int> coeffs;
+		
+		// Constructor
+		public Chain() {
+			face_nums = new List<int>();
+			coeffs = new List<int>();
+		}
+		
+		public void addTerm(int face_num, int coeff) {
+			face_nums.Add(face_num);
+			coeffs.Add(coeff);
+		}
+		
+		// Both lists should be the same length
+		public void display() {
+			if (face_nums.Count == 0) {
+				Console.Write("(Boundary is empty)");
+			}
+			for (int i=0; i<face_nums.Count; i++) {
+				Console.Write("{0}x{1} ",coeffs[i], face_nums[i]);
+			}
+		}
+	}
+	
 	public class SimplicialComplex
 	{
 		List<Face> faces = new List<Face>();
 		int num_vertices = 10;
+		
+		public void betti()
+		{
+			Console.Write("Doesn't yet calculate Betti numbers. For now, display the faces and their boundaries.\n");
+			for (int i=0; i<faces.Count; i++) {
+				Console.Write("The face: ");
+				faces[i].writeFace();
+				Console.Write("\n");
+				Console.Write("The boundary: ");
+				boundary(i);
+				Console.Write("\n\n");
+			}
+			Console.ReadLine();
+		}
+		
+		// Get the number in the list that a given face is.
+		// This is probably inefficient, so think of another way.
+		public int getFaceNum(Face face)
+		{
+			for (int i=0; i<faces.Count; i++) {
+				if (faces[i].isEqual(face)) {
+					return i;
+				}
+			}
+			Console.Write("Error: getFaceNum (sc.cs) is not finding a face as expected.\n");
+			Console.ReadLine();
+			return -1; // Should not reach this case.
+		}
+		
+		public void boundary(int face_num)
+		{
+			if (face_num >= faces.Count) {
+				Console.Write("Face number out of range (should not get to this code).\n");
+				Console.ReadLine();
+				return;
+			}
+			Face face = faces[face_num];
+			Chain chain = new Chain();
+			int coefficient = 1;
+			for (int i=0; i<face.vertices.Count; i++) {
+				Face smallerFace = face.removeVertex(i);
+				chain.addTerm(getFaceNum(smallerFace),coefficient);
+				if (coefficient == 1) {
+					coefficient = -1;
+				}
+				else {
+					coefficient = 1;
+				}
+			}
+			chain.display();
+		}
 	
 		public void setNumVertices()
 		{
@@ -219,7 +297,7 @@ namespace Program
 				bool result1 = int.TryParse(input_blocks[1], out param1);
 				bool result2 = int.TryParse(input_blocks[2], out param2);
 				if (result1 && result2 && param1 <= 10 && param2 >= 1 && param1 >= param2) {
-					Console.Write("Building the complex (not fully implemented yet).\n");
+					Console.Write("Building the complex.\n");
 					Console.ReadLine();
 					faces = new List<Face>();
 					num_vertices = param1;

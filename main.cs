@@ -28,6 +28,7 @@ namespace Program {
 			Console.Write("(C)hange number of vertices.\n");
 			Console.Write("(V)iew faces.\n");
 			Console.Write("(L)oad a pre-existing complex.\n");
+			Console.Write("(B)etti Numbers.\n");
 			Console.Write("(Q)uit.\n");
 			string selection = Console.ReadLine();
 			if (selection.Length > 0 && (selection[0] == 'a' || selection[0] == 'A')) {
@@ -44,6 +45,9 @@ namespace Program {
 			}
 			if (selection.Length > 0 && (selection[0] == 'l' || selection[0] == 'L')) {
 				sc.loadComplex();
+			}
+			if (selection.Length > 0 && (selection[0] == 'b' || selection[0] == 'B')) {
+				sc.betti();
 			}
 			if (selection.Length > 0 && (selection[0] == 'q' || selection[0] == 'Q')) {
 				return false;
