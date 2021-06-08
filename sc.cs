@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Program
 {
-	public class Chain
+	public class Chain // Info about chains and boundary maps here: https://algebrology.github.io/simplicial-complexes-and-boundary-maps/
 	{
 		List<int> face_nums;
 		List<int> coeffs;
@@ -27,7 +27,13 @@ namespace Program
 				Console.Write("(Boundary is empty)");
 			}
 			for (int i=0; i<face_nums.Count; i++) {
-				Console.Write("{0}x{1} ",coeffs[i], face_nums[i]);
+				if (coeffs[i] < 0) {
+					Console.Write("{0}x{1} ",coeffs[i], face_nums[i]);
+				}
+				else
+				{
+					Console.Write("+{0}x{1} ",coeffs[i], face_nums[i]);
+				}
 			}
 		}
 	}
@@ -37,16 +43,58 @@ namespace Program
 		List<Face> faces = new List<Face>();
 		int num_vertices = 10;
 		
+		// Determine if face face_num can be written as a linear combination of the previous faces in the chain.
+		// If yes, then we add one to beta_d, where d is the dimension of the face.
+		// If no, then we subtract one from beta_(d-1)
+		public bool determine_betti(List<Chain> chains_dim, int face_num)
+		{
+			// Write a more proper function later.
+			return true;
+		}
+		
 		public void betti()
 		{
 			Console.Write("Doesn't yet calculate Betti numbers. For now, display the faces and their boundaries.\n");
+			
+			List<List<Chain>> chains_by_dimension = new List<List<Chain>>();
+			List<List<int>> face_nums_by_dimension = new List<List<int>>();
+			List<int> betti_numbers = new List<int>();
+			int max_d = -1; // Maximum value of d found. -1 means no value found yet.
+			
 			for (int i=0; i<faces.Count; i++) {
-				Console.Write("The face: ");
-				faces[i].writeFace();
-				Console.Write("\n");
-				Console.Write("The boundary: ");
-				boundary(i);
-				Console.Write("\n\n");
+				int dimension = faces[i].vertices.Count;
+				if (faces[i].vertices.Count > max_d) {
+					max_d++;
+					chains_by_dimension.Add(new List<Chain>());
+					face_nums_by_dimension.Add(new List<int>());
+					betti_numbers.Add(0);
+				}
+				Chain chain = boundary(i);
+				chains_by_dimension[dimension].Add(chain);
+				face_nums_by_dimension[dimension].Add(i);
+			}
+			for (int i=0; i<chains_by_dimension.Count; i++) {
+				Console.Write("Dimension {0}\n===============\n",i-1);
+				for (int j=0; j<chains_by_dimension[i].Count; j++) {
+					Console.Write("The face: ");
+					faces[face_nums_by_dimension[i][j]].writeFace();
+					Console.Write("\n");
+					Console.Write("The boundary: ");
+					chains_by_dimension[i][j].display();
+					Console.Write("\n\n");
+					bool in_span = determine_betti(chains_by_dimension[i],i);
+					if (in_span) {
+						betti_numbers[i]++;
+					}
+					else if (i>0) { // The case i=0 shouldn't occur
+						betti_numbers[i-1]--;
+					}
+				}
+			}
+			// Display Betti numbers
+			Console.Write("Betti numbers (not yet calculated properly):\n");
+			for (int i=0; i<betti_numbers.Count; i++) {
+				Console.Write("beta_{0}: {1}\n",i-1,betti_numbers[i]);
 			}
 			Console.ReadLine();
 		}
@@ -65,17 +113,17 @@ namespace Program
 			return -1; // Should not reach this case.
 		}
 		
-		public void boundary(int face_num)
-		{
+		public Chain boundary(int face_num)
+		{		
 			if (face_num >= faces.Count) {
 				Console.Write("Face number out of range (should not get to this code).\n");
 				Console.ReadLine();
-				return;
+				return new Chain();
 			}
 			Face face = faces[face_num];
 			Chain chain = new Chain();
 			int coefficient = 1;
-			for (int i=0; i<face.vertices.Count; i++) {
+			for (int i=face.vertices.Count-1; i>=0; i--) {
 				Face smallerFace = face.removeVertex(i);
 				chain.addTerm(getFaceNum(smallerFace),coefficient);
 				if (coefficient == 1) {
@@ -85,7 +133,7 @@ namespace Program
 					coefficient = 1;
 				}
 			}
-			chain.display();
+			return chain;
 		}
 	
 		public void setNumVertices()
