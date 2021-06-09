@@ -36,6 +36,41 @@ namespace Program
 				}
 			}
 		}
+		
+		public Chain copyChain() {
+			Chain new_chain = new Chain();
+			for (int i=0; i<face_nums.Count; i++) {
+				new_chain.face_nums.Add(face_nums[i]);
+				new_chain.coeffs.Add(coeffs[i]);
+			}
+			return new_chain;
+		}
+		
+		public int dimension() {
+			return (face_nums.Count - 1);
+		}
+		
+		public void displayCoeffs(int num_faces) {
+			int current_coeff = 0;
+			for (int i=0; i<num_faces; i++) {
+				int display_coeff = 0;
+				if (current_coeff < coeffs.Count && i==face_nums[current_coeff]) {
+					display_coeff = coeffs[current_coeff];
+					current_coeff++;
+				}
+				Console.Write("{0} ",display_coeff);
+			}
+			Console.Write("\n");
+		}
+		
+		public int getCoeff(int face_num) {
+			for (int i=0; i<face_nums.Count; i++) {
+				if (face_nums[i] == face_num) {
+					return (coeffs[i]);
+				}
+			}
+			return 0;
+		}
 	}
 	
 	public class SimplicialComplex
@@ -48,7 +83,35 @@ namespace Program
 		// If no, then we subtract one from beta_(d-1)
 		public bool determine_betti(List<Chain> chains_dim, int face_num)
 		{
-			// Write a more proper function later.
+			// Make a copy so we can modify the chain without worry
+			List<Chain> temp_chains = new List<Chain>();
+			List<List<int>> system_of_equations = new List<List<int>>(); // Another way of storing the same data
+			for (int i=0; i<chains_dim.Count; i++) {
+				temp_chains.Add(chains_dim[i].copyChain());
+			}
+			for (int i=0; i<=faces.Count; i++) {
+				system_of_equations.Add(new List<int>());
+				for (int j=0; j<=face_num; j++) {
+					system_of_equations[i].Add(temp_chains[j].getCoeff(i));
+				}
+			}
+			// The goal here will be to determine of the (face_num) chain can be written as a linear combination of the previous chains.
+			// Iff yet, then return true.
+			// We will do this by row echelon form.
+			
+			// Some code for displaying and testing, displaying output only at a certain point.
+			int display_dim = 1;
+			int display_face_num = 2;
+			if (face_num == display_face_num && chains_dim[0].dimension() == display_dim) {
+				Console.Write("************************\nRow Echelon Form\n");
+				for (int i=0; i<system_of_equations.Count; i++) {
+					for (int j=0; j<system_of_equations[i].Count; j++) {
+						Console.Write("{0} ",system_of_equations[i][j]);
+					}
+					Console.Write("\n");
+				}
+				Console.Write("************************\n");
+			}
 			return true;
 		}
 		
@@ -82,7 +145,7 @@ namespace Program
 					Console.Write("The boundary: ");
 					chains_by_dimension[i][j].display();
 					Console.Write("\n\n");
-					bool in_span = determine_betti(chains_by_dimension[i],i);
+					bool in_span = determine_betti(chains_by_dimension[i],j);
 					if (in_span) {
 						betti_numbers[i]++;
 					}
