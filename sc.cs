@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Program
-{
+{	
 	public class Chain // Info about chains and boundary maps here: https://algebrology.github.io/simplicial-complexes-and-boundary-maps/
 	{
 		List<int> face_nums;
@@ -78,6 +78,56 @@ namespace Program
 		List<Face> faces = new List<Face>();
 		int num_vertices = 10;
 		
+		public static bool RowEchelon(List<List<int>> system_of_equations) {
+			if (system_of_equations.Count == 0 || system_of_equations[0].Count == 0) {
+				return true; // A pathological case. Deal with this separately if needed.
+			}
+			int num_cols = system_of_equations[0].Count;
+			int num_rows = system_of_equations.Count;
+			int cur_col = 0; // The current column for which we are finding a nonzero leading coefficient.
+			int cur_row = 0; // Number of rows that have been moved to the top.
+			while (cur_col < num_cols-1) {
+				// Find a nonzero leading coefficient if there is one.
+				
+				// Swap this row to the highest allowable point
+				for (int j=cur_row; j<num_rows; j++) {
+					if (system_of_equations[j][cur_col] != 0) { // Found a nonzero leading coefficient
+						int temp = 0;
+						for (int i=0; i<num_cols; i++) {
+							temp = system_of_equations[cur_row][i];
+							system_of_equations[cur_row][i] = system_of_equations[j][i];
+							system_of_equations[j][i] = temp;
+						}
+						j = num_rows;
+						cur_row++;
+					}
+				}
+				
+				// Clear out leading coefficients below it
+				for (int j=cur_row+1; j<num_rows; j++) {
+					if (system_of_equations[j][cur_col] != 0) {
+						for (int i=0; i<num_cols; i++) {
+							system_of_equations[j][i] = system_of_equations[cur_row][cur_col]*system_of_equations[j][i] - (system_of_equations[cur_row][i]*system_of_equations[j][cur_col]);
+						}
+					}
+				}
+				
+				cur_col++;
+			}
+			for (int i=0; i<num_rows; i++) {
+				bool any_nonzero = false;
+				for (int j=0; j<num_cols-1; j++) {
+					if (system_of_equations[i][j] != 0) {
+						any_nonzero = true;
+					}
+				}
+				if (any_nonzero == false && system_of_equations[i][num_cols-1] != 0) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
 		// Determine if face face_num can be written as a linear combination of the previous faces in the chain.
 		// If yes, then we add one to beta_d, where d is the dimension of the face.
 		// If no, then we subtract one from beta_(d-1)
@@ -99,6 +149,8 @@ namespace Program
 			// Iff yet, then return true.
 			// We will do this by row echelon form.
 			
+			bool is_solution = RowEchelon(system_of_equations);
+			
 			// Some code for displaying and testing, displaying output only at a certain point.
 			int display_dim = 1;
 			int display_face_num = 2;
@@ -112,7 +164,7 @@ namespace Program
 				}
 				Console.Write("************************\n");
 			}
-			return true;
+			return is_solution;
 		}
 		
 		public void betti()
