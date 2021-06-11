@@ -32,7 +32,7 @@ namespace Program {
 			Console.Write("(Q)uit.\n");
 			string selection = Console.ReadLine();
 			if (selection.Length > 0 && (selection[0] == 'a' || selection[0] == 'A')) {
-				sc.addEdge();
+				sc.addFace();
 			}
 			if (selection.Length > 0 && (selection[0] == 'd' || selection[0] == 'D')) {
 				sc.deleteFace();

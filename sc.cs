@@ -4,80 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Program
-{	
-	public class Chain // Info about chains and boundary maps here: https://algebrology.github.io/simplicial-complexes-and-boundary-maps/
-	{
-		List<int> face_nums;
-		List<int> coeffs;
-		
-		// Constructor
-		public Chain() {
-			face_nums = new List<int>();
-			coeffs = new List<int>();
-		}
-		
-		public void addTerm(int face_num, int coeff) {
-			face_nums.Add(face_num);
-			coeffs.Add(coeff);
-		}
-		
-		// Both lists should be the same length
-		public void display() {
-			if (face_nums.Count == 0) {
-				Console.Write("(Boundary is empty)");
-			}
-			for (int i=0; i<face_nums.Count; i++) {
-				if (coeffs[i] < 0) {
-					Console.Write("{0}x{1} ",coeffs[i], face_nums[i]);
-				}
-				else
-				{
-					Console.Write("+{0}x{1} ",coeffs[i], face_nums[i]);
-				}
-			}
-		}
-		
-		public Chain copyChain() {
-			Chain new_chain = new Chain();
-			for (int i=0; i<face_nums.Count; i++) {
-				new_chain.face_nums.Add(face_nums[i]);
-				new_chain.coeffs.Add(coeffs[i]);
-			}
-			return new_chain;
-		}
-		
-		public int dimension() {
-			return (face_nums.Count - 1);
-		}
-		
-		public void displayCoeffs(int num_faces) {
-			int current_coeff = 0;
-			for (int i=0; i<num_faces; i++) {
-				int display_coeff = 0;
-				if (current_coeff < coeffs.Count && i==face_nums[current_coeff]) {
-					display_coeff = coeffs[current_coeff];
-					current_coeff++;
-				}
-				Console.Write("{0} ",display_coeff);
-			}
-			Console.Write("\n");
-		}
-		
-		public int getCoeff(int face_num) {
-			for (int i=0; i<face_nums.Count; i++) {
-				if (face_nums[i] == face_num) {
-					return (coeffs[i]);
-				}
-			}
-			return 0;
-		}
-	}
-	
+{		
 	public class SimplicialComplex
 	{
 		List<Face> faces = new List<Face>();
 		int num_vertices = 10;
 		
+		// Determine if there is a solution by using partial row echelon form.
+		// Though not directly related to simplicial complexes, I am putting the function here for simplicity.
 		public static bool RowEchelon(List<List<int>> system_of_equations) {
 			if (system_of_equations.Count == 0 || system_of_equations[0].Count == 0) {
 				return true; // A pathological case. Deal with this separately if needed.
@@ -103,7 +37,9 @@ namespace Program
 					}
 				}
 				
-				// Clear out leading coefficients below it
+				// Clear out leading coefficients below it.
+				// To fully do row echelon form, we should also clear out the leading coefficients above the one we found.
+				// However, since we only need to determine of there is a solution (not actually find it), we can skip that step.
 				for (int j=cur_row+1; j<num_rows; j++) {
 					if (system_of_equations[j][cur_col] != 0) {
 						for (int i=0; i<num_cols; i++) {
@@ -114,6 +50,9 @@ namespace Program
 				
 				cur_col++;
 			}
+			
+			// Find if there are any rows there the constant is nonzero but all variable coefficients are zero.
+			// There is a solution iff there is no such row.
 			for (int i=0; i<num_rows; i++) {
 				bool any_nonzero = false;
 				for (int j=0; j<num_cols-1; j++) {
@@ -152,8 +91,8 @@ namespace Program
 			bool is_solution = RowEchelon(system_of_equations);
 			
 			// Some code for displaying and testing, displaying output only at a certain point.
-			int display_dim = 1;
-			int display_face_num = 2;
+			int display_dim = -1;
+			int display_face_num = -1; // Values set to prevent display
 			if (face_num == display_face_num && chains_dim[0].dimension() == display_dim) {
 				Console.Write("************************\nRow Echelon Form\n");
 				for (int i=0; i<system_of_equations.Count; i++) {
@@ -169,7 +108,7 @@ namespace Program
 		
 		public void betti()
 		{
-			Console.Write("Doesn't yet calculate Betti numbers. For now, display the faces and their boundaries.\n");
+			Console.Write("Following are the faces and their boundaries, followed by Betti numbers.\n");
 			
 			List<List<Chain>> chains_by_dimension = new List<List<Chain>>();
 			List<List<int>> face_nums_by_dimension = new List<List<int>>();
@@ -207,10 +146,11 @@ namespace Program
 				}
 			}
 			// Display Betti numbers
-			Console.Write("Betti numbers (not yet calculated properly):\n");
+			Console.Write("Betti numbers:\n");
 			for (int i=0; i<betti_numbers.Count; i++) {
 				Console.Write("beta_{0}: {1}\n",i-1,betti_numbers[i]);
 			}
+			Console.Write("Enter anything to continue.\n");
 			Console.ReadLine();
 		}
 		
@@ -288,6 +228,7 @@ namespace Program
 		}
 	
 		// Add a face and all its subfaces to a simplicial complex.
+		// The private helper of addFace(), where input and output has already been taken care of.
 		private void addFaceToSC(Face new_face)
 		{
 			// Count the number of faces added
@@ -305,9 +246,11 @@ namespace Program
 			Console.Write("\nAdded {0} new faces.\n",num_added );
 		}
 	
-		public void addEdge()
+		// The public version of adding a face, which also handles text display and the input of a face to add.
+		public void addFace()
 		{
 			Console.Write("Input the face: vertex numbers separated by spaces (e.g. 5 7 12).\n");
+			Console.Write("At most 10 vertices are allowed, as integers from 1 to the number of vertices.\n");
 			string new_face = "";
 			new_face = Console.ReadLine();
 			string[] vertices_string = new_face.Split(' ');
@@ -327,7 +270,10 @@ namespace Program
 				else if (number > num_vertices) {
 					Console.Write("{0} exceeds the number of vertices for this simplicial complex.\n",vertices_string[i]);
 				}
-				if (result && number >= 1 && number <= num_vertices) {
+				else if (i >= 10) {
+					Console.Write("Too many vertices. The limit is {0} in a face (dimension {1}).\n",10,9);
+				}
+				if (result && number >= 1 && number <= num_vertices && i<10) {
 					face.addVertex(number);
 				}
 			}
@@ -351,6 +297,7 @@ namespace Program
 			Console.ReadLine();
 		}
 	
+		// The private helper of deleteFace, where input and output is already taken care of.
 		public void removeFaceFromSC(Face old_face)
 		{
 			// Count the number of faces removed.
@@ -372,9 +319,11 @@ namespace Program
 			Console.Write("\nRemoved {0} faces.\n",num_removed);
 		}
 	
+		// The public version of deleting a face. Also does input and output.
 		public void deleteFace()
 		{
 			Console.Write("Input the face: vertex numbers separated by spaces (e.g. 5 7 12).\n");
+			Console.Write("A face without valid vertices will be interpreted as the empty face and cause everything to be removed.\n");
 			string new_face = "";
 			new_face = Console.ReadLine();
 			string[] vertices_string = new_face.Split(' ');
@@ -407,6 +356,7 @@ namespace Program
 			Console.ReadLine();
 		}
 		
+		// Initialize to one of several preset simplicial complexes.
 		public void loadComplex()
 		{
 			Console.Write("\nEnter the type of complex, followed by parameters.\n\n");

@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Program
 {
+	// A seperate class for a single face of a simplicial complex.
 	public class Face
 	{
 		public List<int> vertices = new List<int>();
